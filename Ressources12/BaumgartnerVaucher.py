@@ -1,4 +1,14 @@
 import pygame
+from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE
+import sys
+
+screen_x = 500
+screen_y = 500
+
+city_color = [10,10,200] # blue
+city_radius = 3
+
+font_color = [255,255,255] # white
 
 class City:
     def __init__(self, name, pos):
@@ -11,15 +21,29 @@ class City:
     def __eq__(self, other):
         return self.name == other.name and self.pos == other.pos
 
+class Solution:
+    def __init__(self):
+        pass
 
 
 problem = []
+cpt = 0
+collecting = True
 
 def loadFile(path):
     file = open(path, 'r')
     for line in file:
         words = line.split()
-        problem.append(City(words[0], (words[1], words[2])))
+        problem.append(City(words[0], (int(words[1]), int(words[2]))))
+
+def draw(cities):
+    screen.fill(font_color)
+    for city in cities:
+        pygame.draw.circle(screen,city_color,city.pos,city_radius)
+    text = font.render("Nombre: %i" % len(cities), True, font_color)
+    textRect = text.get_rect()
+    screen.blit(text, textRect)
+    pygame.display.flip()
 
 
 if __name__ == '__main__':
@@ -29,8 +53,32 @@ if __name__ == '__main__':
     for city in problem:
         print(city)
 
-    if(problem[0] == problem[0]):
-        print("ok")
+    pygame.init()
+    window = pygame.display.set_mode((screen_x, screen_y))
+    pygame.display.set_caption('Baumgartner-Vaucher')
+    screen = pygame.display.get_surface()
+    font = pygame.font.Font(None,30)
 
-    if(problem[0] == problem[1]):
-        print("pas ok")
+    draw(problem)
+
+    while collecting:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                sys.exit(0)
+            elif event.type == KEYDOWN and event.key == K_RETURN:
+                collecting = False
+            elif event.type == MOUSEBUTTONDOWN:
+                problem.append(City(cpt, pygame.mouse.get_pos()))
+                cpt += 1
+                draw(problem)
+
+    screen.fill(font_color)
+    pygame.draw.lines(screen,city_color,True,[city.pos for city in problem])
+    text = font.render("Un chemin, pas le meilleur!", True, font_color)
+    textRect = text.get_rect()
+    screen.blit(text, textRect)
+    pygame.display.flip()
+
+    while True:
+        event = pygame.event.wait()
+        if event.type == KEYDOWN: break
