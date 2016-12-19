@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE
 import sys
+import random
 
 screen_x = 500
 screen_y = 500
@@ -22,8 +23,16 @@ class City:
         return self.name == other.name and self.pos == other.pos
 
 class Solution:
-    def __init__(self):
-        pass
+    def __init__(self, problem):
+        self.problem = problem
+        self.indices = [key for key, value in enumerate(problem)]
+
+    def __iter__(self):
+        for index in self.indices:
+            yield self.problem[index]
+
+    def mutation(self):
+        random.shuffle(self.indices)
 
 
 problem = []
@@ -72,13 +81,17 @@ if __name__ == '__main__':
                 cpt += 1
                 draw(problem)
 
-    screen.fill(font_color)
-    pygame.draw.lines(screen,city_color,True,[city.pos for city in problem])
-    text = font.render("Un chemin, pas le meilleur!", True, font_color)
-    textRect = text.get_rect()
-    screen.blit(text, textRect)
-    pygame.display.flip()
+    soluce = Solution(problem)
 
     while True:
+        soluce.mutation()
         event = pygame.event.wait()
-        if event.type == KEYDOWN: break
+        if event.type == KEYDOWN: break;
+
+        screen.fill(font_color)
+        pygame.draw.lines(screen,city_color,True,[city.pos for city in soluce])
+        print(soluce.indices)
+        text = font.render("Un chemin, pas le meilleur!", True, font_color)
+        textRect = text.get_rect()
+        screen.blit(text, textRect)
+        pygame.display.flip()
