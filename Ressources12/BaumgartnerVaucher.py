@@ -3,6 +3,7 @@ from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE
 import sys
 import random
 import math
+from random import randint
 
 screen_x = 500
 screen_y = 500
@@ -74,6 +75,33 @@ def calculDistance(problem, index):
 
         print("distance parcourue: " + str(distance))
 
+def mutate(index):
+
+    print("avant")
+    for i in index:
+        print(str(i))
+
+    i1 = 0
+    i2 = 0
+    while(i1 == i2):
+        i1 = randint(0,len(index)-1)
+        i2 = randint(0,len(index)-1)
+
+
+    print("i1: " + str(i1))
+    print("i2: " + str(i2))
+
+    temp = index[i1]
+    index[i1] = index[i2]
+    index[i2] = temp
+
+
+    print("après")
+    for i in index:
+        print(str(i))
+
+    return index
+
 
 if __name__ == '__main__':
 
@@ -109,6 +137,8 @@ if __name__ == '__main__':
         index.append(i)
 
     calculDistance(problem, index)
+
+    mutate(index)
 
 
     while True:
