@@ -21,6 +21,8 @@ city_radius = 3
 font_color = [255,255,255] # white
 
 nbSolutions = 10
+problem = []
+cpt = 0
 
 class City:
     def __init__(self, name, pos):
@@ -57,6 +59,38 @@ class Solution:
         self.indices[i1] = self.indices[i2]
         self.indices[i2] = temp
 
+    def croisement(self, soluce2):
+        i1 = 0
+        i2 = 0
+
+        #print(self.indices)
+        #print(soluce2.indices)
+
+        while(i1 == i2):
+            i1 = randint(0,len(self.indices)-1)
+            i2 = randint(i1,len(self.indices)-1)
+        #print("i1:"+str(i1))
+        #print("i2:"+str(i2))
+
+        x2 = i1-1
+        newIndices = [0 for i in range(len(self.indices))]
+        for x1 in range(i1-1, i1 -1 - len(self.indices), -1):
+            error = False
+            #print(newIndices)
+            for y in range(i1, i2+1):
+                if(self.indices[x1] == soluce2.indices[y]):
+                    error = True
+            #print("x1:"+str(x1))
+            if not error:
+                newIndices[x2] = self.indices[x1]
+                x2-=1
+
+        for y in range(i1, i2 + 1):
+            newIndices[y] = soluce2.indices[y]
+
+        #print(newIndices)
+        return newIndices
+
 
     def calculDistance(self):
         if(len(self.problem) != len(self.indices)):
@@ -77,9 +111,44 @@ class Solution:
         return distance
 
 
-problem = []
-cpt = 0
-collecting = True
+def croisementRandom(soluces, n):
+    newsoluces = []
+
+    combinaison = set()
+    while len(combinaison) < n:
+        i1 = 0
+        i2 = 0
+        while(i1 == i2):
+            i1 = randint(0,len(soluces)-1)
+            i2 = randint(0,len(soluces)-1)
+
+        combinaison.add((i1,i2))
+    #print(combinaison)
+    for (i1,i2) in combinaison:
+        newsoluces.append(Solution(problem))
+
+        newsoluces[-1].indices = soluces[i1].croisement(soluces[i2])
+
+    return newsoluces
+def croisementElitiste(soluces, n):
+    newsoluces = []
+
+    combinaison = set()
+    while len(combinaison) < n:
+        i1 = 0
+        i2 = 0
+        while(i1 == i2):
+            i1 = randint(0,(len(soluces)+1)/2-1)
+            i2 = randint(0,len(soluces)-1)
+
+        combinaison.add((i1,i2))
+    #print(combinaison)
+    for (i1,i2) in combinaison:
+        newsoluces.append(Solution(problem))
+
+        newsoluces[-1].indices = soluces[i1].croisement(soluces[i2])
+
+    return newsoluces
 
 def loadFile(path):
     file = open(path, 'r')
@@ -96,12 +165,11 @@ def draw(cities):
     screen.blit(text, textRect)
     pygame.display.flip()
 
-
-
 def ga_solve(file=None, gui=True, maxtime=0):
 
     if(file):
         loadFile(file)
+        draw(problem)
     else:
         draw(problem)
 
@@ -124,9 +192,12 @@ def ga_solve(file=None, gui=True, maxtime=0):
         for i in range(nbSolutions):
             solutions.append(Solution(problem))
 
-        #while(seconds < maxtime):
-        #    seconds = (datetime.datetime.now() - start).total_seconds()
+        while(seconds < maxtime):
+            for solution in solutions:
+                solution.mutation()
 
+            solutions = croisementRandom(solutions, 10)
+            seconds = (datetime.datetime.now() - start).total_seconds()
 
         bestSoluce = findBestSolution(solutions)
         print(bestSoluce.calculDistance())
