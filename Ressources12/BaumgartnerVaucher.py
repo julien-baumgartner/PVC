@@ -4,14 +4,23 @@ import sys
 import random
 import math
 from random import randint
+import datetime
+
 
 screen_x = 500
 screen_y = 500
+pygame.init()
+window = pygame.display.set_mode((screen_x, screen_y))
+pygame.display.set_caption('Baumgartner-Vaucher')
+font = pygame.font.Font(None,30)
+screen = pygame.display.get_surface()
 
 city_color = [10,10,200] # blue
 city_radius = 3
 
 font_color = [255,255,255] # white
+
+nbSolutions = 10
 
 class City:
     def __init__(self, name, pos):
@@ -25,9 +34,13 @@ class City:
         return self.name == other.name and self.pos == other.pos
 
 class Solution:
-    def __init__(self, problem):
+    def __init__(self, problem, indices = None):
         self.problem = problem
-        self.indices = [key for key, value in enumerate(problem)]
+        if(indices):
+            self.indices = indices
+        else:
+            self.indices = [key for key, value in enumerate(problem)]
+            random.shuffle(self.indices)
 
     def __iter__(self):
         for index in self.indices:
@@ -62,9 +75,8 @@ class Solution:
                                         abs(ville1.pos[1] - ville2.pos[1])*
                                         abs(ville1.pos[1] - ville2.pos[1]))
                 distance += newDistance
-                print("new distance: " + str(newDistance))
 
-            print("distance parcourue: " + str(distance))
+        return distance
 
 
 problem = []
@@ -88,49 +100,72 @@ def draw(cities):
 
 
 
+def ga_solve(file=None, gui=True, maxtime=0):
 
+    if(file):
+        loadFile(file)
+    else:
+        draw(problem)
+
+        collecting = True
+        while collecting:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    sys.exit(0)
+                elif event.type == KEYDOWN and event.key == K_RETURN:
+                    collecting = False
+                elif event.type == MOUSEBUTTONDOWN:
+                    problem.append(City(cpt, pygame.mouse.get_pos()))
+                    draw(problem)
+
+        soluce = Solution(problem)
+
+
+        soluce.calculDistance()
+
+    if(maxtime > 0):
+        start = datetime.datetime.now()
+        seconds = 0;
+        solutions = []
+
+        for i in range(nbSolutions):
+            solutions.append(Solution(problem))
+
+        while(seconds < maxtime):
+            seconds = (datetime.datetime.now() - start).total_seconds()
+
+        bestSoluce = findBestSolution(solutions)
+        print(bestSoluce.calculDistance())
+
+        if(file==None):
+
+            screen.fill(font_color)
+            pygame.draw.lines(screen,city_color,True,[city.pos for city in bestSoluce])
+            print(bestSoluce.indices)
+            text = font.render("Un chemin, pas le meilleur!", True, font_color)
+            textRect = text.get_rect()
+            screen.blit(text, textRect)
+            pygame.display.flip()
+
+            while True:
+                event = pygame.event.wait()
+                if event.type == KEYDOWN: break;
+
+
+
+def findBestSolution(solutions):
+    distanceMin = 999999999
+    bestSolution = None
+    for soluce in solutions:
+        distance = soluce.calculDistance()
+        if(distance < distanceMin):
+            distanceMin = distance
+            bestSolution = soluce
+
+    return bestSolution
 
 
 if __name__ == '__main__':
 
-    loadFile("data/pb005.txt")
-
-    for city in problem:
-        print(city)
-
-    pygame.init()
-    window = pygame.display.set_mode((screen_x, screen_y))
-    pygame.display.set_caption('Baumgartner-Vaucher')
-    screen = pygame.display.get_surface()
-    font = pygame.font.Font(None,30)
-
-    draw(problem)
-
-    while collecting:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                sys.exit(0)
-            elif event.type == KEYDOWN and event.key == K_RETURN:
-                collecting = False
-            elif event.type == MOUSEBUTTONDOWN:
-                problem.append(City(cpt, pygame.mouse.get_pos()))
-                cpt += 1
-                draw(problem)
-
-    soluce = Solution(problem)
-
-
-    soluce.calculDistance()
-
-    while True:
-        soluce.mutation()
-        event = pygame.event.wait()
-        if event.type == KEYDOWN: break;
-
-        screen.fill(font_color)
-        pygame.draw.lines(screen,city_color,True,[city.pos for city in soluce])
-        print(soluce.indices)
-        text = font.render("Un chemin, pas le meilleur!", True, font_color)
-        textRect = text.get_rect()
-        screen.blit(text, textRect)
-        pygame.display.flip()
+    ga_solve(None, True, 3)
+    #ga_solve("data/pb005.txt", True, 3)
