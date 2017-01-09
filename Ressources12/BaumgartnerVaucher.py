@@ -63,17 +63,15 @@ class Solution:
             print("Les tableaux de villes et d'index ne font pas la même taille")
         else:
             distance = 0
-            for i in self.indices:
-                ville1 = self.problem[i]
+            for i in range(len(self.indices)):
+                ville1 = self.problem[self.indices[i]]
                 if(i+1 == len(self.problem)):
-                    ville2 = self.problem[0]
+                    ville2 = self.problem[self.indices[0]]
                 else:
-                    ville2 = self.problem[i+1]
+                    ville2 = self.problem[self.indices[i+1]]
 
-                newDistance = math.sqrt(abs(ville1.pos[0] - ville2.pos[0])*
-                                        abs(ville1.pos[0] - ville2.pos[0]) +
-                                        abs(ville1.pos[1] - ville2.pos[1])*
-                                        abs(ville1.pos[1] - ville2.pos[1]))
+                newDistance = math.sqrt(abs(ville1.pos[0] - ville2.pos[0])**2+
+                                        abs(ville1.pos[1] - ville2.pos[1])**2)
                 distance += newDistance
 
         return distance
@@ -118,11 +116,6 @@ def ga_solve(file=None, gui=True, maxtime=0):
                     problem.append(City(cpt, pygame.mouse.get_pos()))
                     draw(problem)
 
-        soluce = Solution(problem)
-
-
-        soluce.calculDistance()
-
     if(maxtime > 0):
         start = datetime.datetime.now()
         seconds = 0;
@@ -131,8 +124,9 @@ def ga_solve(file=None, gui=True, maxtime=0):
         for i in range(nbSolutions):
             solutions.append(Solution(problem))
 
-        while(seconds < maxtime):
-            seconds = (datetime.datetime.now() - start).total_seconds()
+        #while(seconds < maxtime):
+        #    seconds = (datetime.datetime.now() - start).total_seconds()
+
 
         bestSoluce = findBestSolution(solutions)
         print(bestSoluce.calculDistance())
@@ -151,18 +145,23 @@ def ga_solve(file=None, gui=True, maxtime=0):
                 event = pygame.event.wait()
                 if event.type == KEYDOWN: break;
 
+def sortSolutions(solutions):
+    solutions = sorted(solutions, key=lambda soluce: soluce.calculDistance(), reverse = False)
+    return solutions
 
 
 def findBestSolution(solutions):
-    distanceMin = 999999999
-    bestSolution = None
-    for soluce in solutions:
-        distance = soluce.calculDistance()
-        if(distance < distanceMin):
-            distanceMin = distance
-            bestSolution = soluce
+    #distanceMin = 999999999
+    #bestSolution = None
+    #for soluce in solutions:
+    #    distance = soluce.calculDistance()
+    #    if(distance < distanceMin):
+    #        distanceMin = distance
+    #        bestSolution = soluce
+    solutions = sortSolutions(solutions)
 
-    return bestSolution
+
+    return solutions[0]
 
 
 if __name__ == '__main__':
