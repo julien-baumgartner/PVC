@@ -20,8 +20,8 @@ city_radius = 3
 
 font_color = [255,255,255] # white
 
-nbSolutions = 50
-selection = 20
+nbSolutions = 300
+selection = 100
 problem = []
 cpt = 0
 
@@ -49,18 +49,26 @@ class Solution:
         for index in self.indices:
             yield self.problem[index]
 
-    def mutation(self):
-        i1 = 0
-        i2 = 0
-        while(i1 == i2):
-            i1 = randint(0,len(self.indices)-1)
-            i2 = randint(0,len(self.indices)-1)
+    def mutation(self, ratio):
+        #mutedIndices = []
+        nbMutation = (int)(len(self.indices)*ratio)
+        if nbMutation == 0:
+            nbMutation = 1
+        for i in range(nbMutation):
+            i1 = 0
+            i2 = 0
+            #while(i1 == i2 or i1 in mutedIndices or i2 in mutedIndices):
+            while(i1 == i2):
+                i1 = randint(0,len(self.indices)-1)
+                i2 = randint(0,len(self.indices)-1)
 
 
-        newIndices = list(self.indices)
-        temp = newIndices[i1]
-        newIndices[i1] = newIndices[i2]
-        newIndices[i2] = temp
+            newIndices = list(self.indices)
+            temp = newIndices[i1]
+            newIndices[i1] = newIndices[i2]
+            newIndices[i2] = temp
+            #mutedIndices.append(i1)
+            #mutedIndices.append(i2)
 
         return newIndices
 
@@ -194,6 +202,8 @@ def ga_solve(file=None, gui=True, maxtime=0):
         start = datetime.datetime.now()
         seconds = 0;
         solutions = []
+        nbSolutions = (int)(7500/len(problem))
+        selection = (int)(nbSolutions / 4)
 
         for i in range(nbSolutions):
             solutions.append(Solution(problem))
@@ -205,7 +215,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
             solutions.extend(croisementRandom(solutions, nbSolutions-selection))
             for i in range(nbSolutions):
                 solutions.append(Solution(problem))
-                solutions[-1].indices = solutions[i].mutation()
+                solutions[-1].indices = solutions[i].mutation(seconds/maxtime)
             screen.fill(font_color)
             pygame.draw.lines(screen,city_color,True,[city.pos for city in solutions[0]])
             print(solutions[0].calculDistance())
@@ -253,4 +263,4 @@ def findBestSolution(solutions):
 if __name__ == '__main__':
 
     #ga_solve(None, True, 10)
-    ga_solve("data/pb050.txt", True, 10)
+    ga_solve("data/pb100.txt", True, 20)
