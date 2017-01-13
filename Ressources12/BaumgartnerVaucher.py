@@ -20,8 +20,8 @@ city_radius = 3
 
 font_color = [255,255,255] # white
 
-nbSolutions = 20
-selection = 5
+nbSolutions = 50
+selection = 20
 problem = []
 cpt = 0
 
@@ -203,8 +203,9 @@ def ga_solve(file=None, gui=True, maxtime=0):
             solutions = sorted(solutions, key=lambda solution: solution.calculDistance(), reverse=False)
             solutions = solutions[:selection]
             solutions.extend(croisementRandom(solutions, nbSolutions-selection))
-            for solution in solutions:
-                solution.mutation()
+            for i in range(nbSolutions):
+                solutions.append(Solution(problem))
+                solutions[-1].indices = solutions[i].mutation()
             screen.fill(font_color)
             pygame.draw.lines(screen,city_color,True,[city.pos for city in solutions[0]])
             print(solutions[0].calculDistance())
@@ -252,4 +253,4 @@ def findBestSolution(solutions):
 if __name__ == '__main__':
 
     #ga_solve(None, True, 10)
-    ga_solve("data/pb020.txt", True, 10)
+    ga_solve("data/pb050.txt", True, 10)
