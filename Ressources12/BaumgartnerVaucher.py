@@ -5,25 +5,18 @@ import random
 import math
 from random import randint
 import datetime
+import argparse
 
 
 screen_x = 500
 screen_y = 500
-pygame.init()
-window = pygame.display.set_mode((screen_x, screen_y))
-pygame.display.set_caption('Baumgartner-Vaucher')
-font = pygame.font.Font(None,30)
-screen = pygame.display.get_surface()
+
 
 city_color = [10,10,200] # blue
 city_radius = 3
 
 font_color = [255,255,255] # white
 
-nbSolutions = 300
-selection = 100
-problem = []
-cpt = 0
 
 class City:
     def __init__(self, name, pos):
@@ -50,14 +43,12 @@ class Solution:
             yield self.problem[index]
 
     def mutation(self, ratio):
-        #mutedIndices = []
         nbMutation = (int)(len(self.indices)*ratio)
         if nbMutation == 0:
             nbMutation = 1
         for i in range(nbMutation):
             i1 = 0
             i2 = 0
-            #while(i1 == i2 or i1 in mutedIndices or i2 in mutedIndices):
             while(i1 == i2):
                 i1 = randint(0,len(self.indices)-1)
                 i2 = randint(0,len(self.indices)-1)
@@ -67,8 +58,6 @@ class Solution:
             temp = newIndices[i1]
             newIndices[i1] = newIndices[i2]
             newIndices[i2] = temp
-            #mutedIndices.append(i1)
-            #mutedIndices.append(i2)
 
         return newIndices
 
@@ -76,24 +65,19 @@ class Solution:
         i1 = 0
         i2 = 0
 
-        #print(self.indices)
-        #print(soluce2.indices)
-
         while(i1 == i2):
             i1 = randint(0,len(self.indices)-1)
             i2 = randint(i1,len(self.indices)-1)
-        #print("i1:"+str(i1))
-        #print("i2:"+str(i2))
 
         x2 = i1-1
         newIndices = [0 for i in range(len(self.indices))]
         for x1 in range(i1-1, i1 -1 - len(self.indices), -1):
             error = False
-            #print(newIndices)
+
             for y in range(i1, i2+1):
                 if(self.indices[x1] == soluce2.indices[y]):
                     error = True
-            #print("x1:"+str(x1))
+
             if not error:
                 newIndices[x2] = self.indices[x1]
                 x2-=1
@@ -101,7 +85,6 @@ class Solution:
         for y in range(i1, i2 + 1):
             newIndices[y] = soluce2.indices[y]
 
-        #print(newIndices)
         return newIndices
 
 
@@ -136,7 +119,7 @@ def croisementRandom(soluces, n):
             i2 = randint(0,len(soluces)-1)
 
         combinaison.add((i1,i2))
-    #print(combinaison)
+
     for (i1,i2) in combinaison:
         newsoluces.append(Solution(problem))
 
@@ -156,7 +139,7 @@ def croisementElitiste(soluces, n):
             i2 = randint(0,len(soluces)-1)
 
         combinaison.add((i1,i2))
-    #print(combinaison)
+
     for (i1,i2) in combinaison:
         newsoluces.append(Solution(problem))
 
@@ -164,8 +147,8 @@ def croisementElitiste(soluces, n):
 
     return newsoluces
 
-def loadFile(path):
-    file = open(path, 'r')
+def loadFile(file):
+    # file = open(path, 'r')
     for line in file:
         words = line.split()
         problem.append(City(words[0], (int(words[1]), int(words[2]))))
@@ -211,7 +194,6 @@ def ga_solve(file=None, gui=True, maxtime=0):
             solutions.append(Solution(problem))
 
         while(seconds < maxtime):
-        #for _ in range(10):
             solutions = sorted(solutions, key=lambda solution: solution.calculDistance(), reverse=False)
             solutions = solutions[:selection]
             solutions.extend(croisementRandom(solutions, nbSolutions-selection))
@@ -229,21 +211,9 @@ def ga_solve(file=None, gui=True, maxtime=0):
             seconds = (datetime.datetime.now() - start).total_seconds()
 
         bestSoluce = findBestSolution(solutions)
-        #print(bestSoluce.calculDistance())
 
-
-        #screen.fill(font_color)
-        #pygame.draw.lines(screen,city_color,True,[city.pos for city in bestSoluce])
-        #print(bestSoluce.indices)
-        #text = font.render("Un chemin, pas le meilleur!", True, font_color)
-        #textRect = text.get_rect()
-        #screen.blit(text, textRect)
         if(gui):
             pygame.display.flip()
-
-        #while True:
-        #    event = pygame.event.wait()
-        #    if event.type == KEYDOWN: break;
 
         listVilles = []
         for i in bestSoluce.indices:
@@ -257,13 +227,6 @@ def sortSolutions(solutions):
 
 
 def findBestSolution(solutions):
-    #distanceMin = 999999999
-    #bestSolution = None
-    #for soluce in solutions:
-    #    distance = soluce.calculDistance()
-    #    if(distance < distanceMin):
-    #        distanceMin = distance
-    #        bestSolution = soluce
     solutions = sortSolutions(solutions)
 
 
@@ -272,5 +235,22 @@ def findBestSolution(solutions):
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--nogui", action="store_false", help="disable the gui")
+    parser.add_argument("--maxtime", type=int, help="time max before return a solution")
+    parser.add_argument("filename", nargs='?', default=None, type=argparse.FileType('r'), help="name of the file that contain the cities")
+    args = parser.parse_args()
+
+    nbSolutions = 300
+    selection = 100
+    problem = []
+    cpt = 0
+
+    if(args.nogui):
+        pygame.init()
+        window = pygame.display.set_mode((screen_x, screen_y))
+        pygame.display.set_caption('Baumgartner-Vaucher')
+        font = pygame.font.Font(None,30)
+        screen = pygame.display.get_surface()
     #ga_solve(None, True, 10)
-    ga_solve("data/pb050.txt", False, 10)
+    ga_solve(args.filename, args.nogui, args.maxtime)
