@@ -17,6 +17,8 @@ city_radius = 3
 
 font_color = [255,255,255] # white
 
+problem = []
+
 
 class City:
     def __init__(self, name, pos):
@@ -147,8 +149,8 @@ def croisementElitiste(soluces, n):
 
     return newsoluces
 
-def loadFile(file):
-    # file = open(path, 'r')
+def loadFile(path):
+    file = open(path, 'r')
     for line in file:
         words = line.split()
         problem.append(City(words[0], (int(words[1]), int(words[2]))))
@@ -205,7 +207,6 @@ def ga_solve(file=None, gui=True, maxtime=0):
             if(gui):
                 screen.fill(font_color)
                 pygame.draw.lines(screen,city_color,True,[city.pos for city in solutions[0]])
-                #print(solutions[0].calculDistance())
                 text = font.render("Un chemin, pas le meilleur!", True, font_color)
                 textRect = text.get_rect()
                 screen.blit(text, textRect)
@@ -217,9 +218,6 @@ def ga_solve(file=None, gui=True, maxtime=0):
         nbIdenticalSolutions = 0
         oldBestDistance = -1
         while(nbIdenticalSolutions < 10):
-        #for _ in range(10):
-            # print(nbIdenticalSolutions)
-            # print(oldBestDistance)
             solutions = sorted(solutions, key=lambda solution: solution.calculDistance(), reverse=False)
             solutions = solutions[:selection]
             solutions.extend(croisementRandom(solutions, nbSolutions-selection))
@@ -229,7 +227,6 @@ def ga_solve(file=None, gui=True, maxtime=0):
             if(gui):
                 screen.fill(font_color)
                 pygame.draw.lines(screen,city_color,True,[city.pos for city in solutions[0]])
-                #print(solutions[0].calculDistance())
                 text = font.render("Un chemin, pas le meilleur!", True, font_color)
                 textRect = text.get_rect()
                 screen.blit(text, textRect)
@@ -281,5 +278,4 @@ if __name__ == '__main__':
         pygame.display.set_caption('Baumgartner-Vaucher')
         font = pygame.font.Font(None,30)
         screen = pygame.display.get_surface()
-    #ga_solve(None, True, 10)
     ga_solve(args.filename, args.nogui, args.maxtime)
