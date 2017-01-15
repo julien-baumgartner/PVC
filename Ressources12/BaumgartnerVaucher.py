@@ -199,16 +199,18 @@ def ga_solve(file=None, gui=True, maxtime=0):
                     problem.append(City(cpt, pygame.mouse.get_pos()))
                     draw(problem)
 
+
+    solutions = []
+    nbSolutions = (int)(10000/len(problem))
+    selection = (int)(nbSolutions / 3)
+
+    for i in range(nbSolutions):
+        solutions.append(Solution(problem))
+
     if(maxtime > 0):
         maxtime -= 0.2
         start = datetime.datetime.now()
         seconds = 0;
-        solutions = []
-        nbSolutions = (int)(10000/len(problem))
-        selection = (int)(nbSolutions / 3)
-
-        for i in range(nbSolutions):
-            solutions.append(Solution(problem))
 
         while(seconds < maxtime):
         #for _ in range(10):
@@ -229,27 +231,46 @@ def ga_solve(file=None, gui=True, maxtime=0):
             seconds = (datetime.datetime.now() - start).total_seconds()
 
         bestSoluce = findBestSolution(solutions)
-        #print(bestSoluce.calculDistance())
+    else:
+        nbIdenticalSolutions = 0
+        oldBestDistance = -1
+        while(nbIdenticalSolutions < 10):
+        #for _ in range(10):
+            print(nbIdenticalSolutions)
+            print(oldBestDistance)
+            solutions = sorted(solutions, key=lambda solution: solution.calculDistance(), reverse=False)
+            solutions = solutions[:selection]
+            solutions.extend(croisementRandom(solutions, nbSolutions-selection))
+            for i in range(nbSolutions):
+                solutions.append(Solution(problem))
+                solutions[-1].indices = solutions[i].mutation(len(problem)/10+nbIdenticalSolutions*2)
+            if(gui):
+                screen.fill(font_color)
+                pygame.draw.lines(screen,city_color,True,[city.pos for city in solutions[0]])
+                #print(solutions[0].calculDistance())
+                text = font.render("Un chemin, pas le meilleur!", True, font_color)
+                textRect = text.get_rect()
+                screen.blit(text, textRect)
+                pygame.display.flip()
+            if(oldBestDistance == -1 or solutions[0].calculDistance() < oldBestDistance ):
+                nbIdenticalSolutions = 0
+                oldBestDistance = solutions[0].calculDistance()
+            else:
+                nbIdenticalSolutions = nbIdenticalSolutions + 1
 
-
-        #screen.fill(font_color)
-        #pygame.draw.lines(screen,city_color,True,[city.pos for city in bestSoluce])
-        #print(bestSoluce.indices)
-        #text = font.render("Un chemin, pas le meilleur!", True, font_color)
-        #textRect = text.get_rect()
-        #screen.blit(text, textRect)
-        if(gui):
-            pygame.display.flip()
+        bestSoluce = findBestSolution(solutions)
+    if(gui):
+        pygame.display.flip()
 
         #while True:
         #    event = pygame.event.wait()
         #    if event.type == KEYDOWN: break;
 
-        listVilles = []
-        for i in bestSoluce.indices:
-            listVilles.append(problem[i].name)
+    listVilles = []
+    for i in bestSoluce.indices:
+        listVilles.append(problem[i].name)
 
-        return bestSoluce.calculDistance(), listVilles
+    return bestSoluce.calculDistance(), listVilles
 
 def sortSolutions(solutions):
     solutions = sorted(solutions, key=lambda soluce: soluce.calculDistance(), reverse = False)
@@ -273,4 +294,4 @@ def findBestSolution(solutions):
 if __name__ == '__main__':
 
     #ga_solve(None, True, 10)
-    ga_solve("data/pb050.txt", False, 10)
+    ga_solve("data/pb100.txt", True, 0)
