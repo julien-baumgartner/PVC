@@ -264,7 +264,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--nogui", action="store_false", help="disable the gui")
     parser.add_argument("--maxtime", type=float, default=0.0, help="time max before return a solution")
-    parser.add_argument("filename", nargs='?', default=None, type=argparse.FileType('r'), help="name of the file that contain the cities")
+    parser.add_argument("filename", nargs='?', default=None, type=str, help="name of the file that contain the cities")
     args = parser.parse_args()
 
     nbSolutions = 300
